@@ -2,6 +2,7 @@
 *Computational Methods in Economics, Spring 2017:* Term Project Repository
 
 *Project Title:* Solving the Power Flow Equations
+
 *Author:* Hilary Yu
 
 Power flow analysis involves describing the operating state of a power system - the network of generators, transmission lines, and loads representing a certain service area, which could range from a municipality to an area several states large. Starting with certain known quantities throughout the network, such as generation and load values, the analysis facilitates a determination as to how power flows to its destination.
