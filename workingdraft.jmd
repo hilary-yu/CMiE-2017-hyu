@@ -1,0 +1,32 @@
+---
+title: Working Draft of Final Project Paper
+author: Hilary Yu
+date: 24 April 2017
+---
+
+# Introduction
+
+## Power Systems
+
+## The Power Flow Problem
+
+The *power flow problem* is among the most common nonlinear problems in the study of power systems. 
+
+The power flow equations are:
+
+**In polar form:**
+$$P_k = \Sigma\limits_{n=1}\limits^{N} \lvert V_k \rvert \lvert V_n \rvert \lvert Y_{kn} \rvert cos(\delta_k - \delta_n - \theta_{kn}$$
+$$Q_k = \Sigma\limits_{n=1}\limits^{N} \lvert V_k \rvert \lvert V_n \rvert \lvert Y_{kn} \rvert sin(\delta_k - \delta_n - \theta_{kn}$$
+where $$k = 1,2,...N$$
+
+**In rectangular form:**
+$$P_k = \Sigma\limits_{n=1}\limits^{N} \lvert V_k \rvert \lvert V_n \rvert [G_{kn} cos(\delta_k - \delta_n) + B_{kn} sin(\delta_k - \delta_{n})]$$
+$$Q_k = \Sigma\limits_{n=1}\limits^{N} \lvert V_k \rvert \lvert V_n \rvert [G_{kn} sin(\delta_k - \delta_n) - B_{kn} cos(\delta_k - \delta_{n})]$$
+
+# Project Outline
+
+
+# References
+
+Crow, M.L. (2016). *Computational Methods for Electric Power Systems (3rd ed).* Boca Raton, FL: CRC Press.
+Von Meier, A. (2006). *Electric Power Systems: A Conceptual Introduction.* Hoboken, NJ: John Wiley & Sons, Inc.
