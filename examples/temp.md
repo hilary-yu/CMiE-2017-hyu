@@ -1,1 +1,0 @@
-[Include examples of applications in this folder.]

@@ -1,0 +1,168 @@
+---
+title: Using Numerical Analysis to Solve the Power Flow Problem
+author: Hilary Yu
+date: May 2017
+---
+
+The GitHub repository for this project is available [here](https://github.com/hilary-yu/CMiE-2017-hyu).
+
+### Introduction
+
+![alt text](http://i.imgur.com/dOds2eF.jpg "Image of a simple 2-bus system")
+
+#### Power Systems
+
+In its most fundamental form, a power system is a network of generators, transmission lines, and loads for any given area - 
+that is, the extent of a power system can be defined over a wide range of areas, from a city to several states. Power systems 
+are typically operated according to the basic rule that supply must equal demand. With alternating current, and making the simplification 
+of ignoring losses (both active and reactive), the power flow between any two electrically distinct nodes in a network - such as between a 
+bus with a generator and a bus with a load - can be described as:
+
+$$S_{1,2} = \frac{V_1 V_2 sin(\delta_{1,2})}{X} - j (\frac{V_1 V_2 cos(\delta_{1,2})}{X} - \frac{V_1^2}{X})$$
+
+where $V_1$ and $V_2$ are the respective nodal voltage magnitudes at two ends of a transmission line, $X$ is the line reactance, 
+and $\delta_{1,2}$ is the voltage angular difference between the nodes. The equation above demonstrates that one or a combination of the 
+parameters (voltage, line reactance, or phase angle) work to determine the real and reactive power flows in a line, and hence to different
+nodes in a network. 
+
+Understanding how power flows within a system is an integral component of grid operations - for example, for contingency analyses in the event
+a fault occurs, or in preparing to take a transmission line offline for maintenance, to determine whether the remaining lines 
+will, within their rated capacities, be able to handle the loads in the system after power flows are redistributed.
+
+
+#### The Power Flow Problem
+
+One common tool for analyzing power systems is known as power flow (or sometimes, load flow). Power flow, which is a tool for 
+steady-state analysis, can be used not only to determine how power flows are distributed within a system, but also to ascertain the 
+voltages and currents at the buses in a network (where a bus represents a physical busbar in the system, and can be thought of 
+as the nodes of a network, or the locations that are electrically distinct, Often, a bus marks the location of a generator and/or
+load).
+
+For a direct current system, the relationships between voltages and currents (which relates to power through $P = IV$)  can be determined 
+through a set of linear equations. However, for a network of alternating current power sources and loads, the power flow equations have no 
+closed-form solution and must instead be determined numerically, through an iterative process. This problem is known as the power flow 
+problem.
+
+Solving the power flow problem entails developing a relationship between real power $P$, reactive power $Q$, voltage magnitude
+$\lvert V \rvert$ and voltage phase angle $\delta$, at all nodes (buses) in a network. The steps involved are:
+
+    1. Identifying each bus in the network and the connections between them
+    2. Writing down a system of equations to describe the network
+    3. Establishing what is known at each bus
+    4. Solving for the key unknowns at each bus
+
+In solving the problem, four variables are assumed per bus, where $$k$$ indexes each bus: 1) $\lvert V_k \rvert$ = voltage magnitude; 2) $\delta_k$ = voltage phase angle; 3) $P_k$ = net real power (determined by load 
+and/or generation at the bus); and $Q_k$ = net reactive power (determined by load and/or generation at the bus.
+
+Typically, two variables are known at each bus, such that the objective is to solve for the other two unknowns.
+
+The variables that are known/unknown depend on the type of bus:
+
+1. **Load (P-Q) bus:** A bus where power is consumed. $P_k$ and $Q_k$ are known. A generator may also be present at this type of bus, in which case $P_k = P_{Gk} - P_{Lk}$
+2. **Voltage-controlled (P-V) bus:** A bus with 1+ generators and no load. $\lvert V_k \rvert$ and $P_k$ are known.
+3. **Slack/swing bus:** A bus that provides whatever real and reactive power is needed for conservation in the system - because there are resistive losses in a transmission line
+(where $P_{loss}=I^2 R$), there is typically a mismatch between generation and load. The slack/swing bus helps to account for this mismatch, and at least one is needed in every 
+network. For a slack/swing bus, $\lvert V_k \rvert$ and $\delta_k$ are known.
+
+Returning to the steps to solve the power-flow problem:
+
+**STEP 1.** Identifying each bus in the network and the connections between them
+
+This step produces a Y-bus admittance matrix, which is composed of the admittances between connected buses (where admittance equals the current injected at a bus divided by the bus voltage).
+
+**STEP 2.** Writing down a system of equations to describe the network
+
+For an alternating current system, the set of nonlinear, simultaneous power flow equations are:
+
+**In polar form:** Where $$k = 1,2,...N$$ and indexes the bus number
+
+$$P_k = \sum_{n=1}^{N} \lvert V_k \rvert \lvert V_n \rvert \lvert Y_{kn} \rvert cos(\delta_k - \delta_n - \theta_{kn})$$
+
+$$Q_k = \sum_{n=1}^{N} \lvert V_k \rvert \lvert V_n \rvert \lvert Y_{kn} \rvert sin(\delta_k - \delta_n - \theta_{kn})$$
+
+
+**In rectangular form:** Where $$k = 1,2,...N$$ and indexes the bus number
+ 
+$$P_k = \sum_{n=1}^{N} \lvert V_k \rvert \lvert V_n \rvert [G_{kn} cos(\delta_k - \delta_n) + B_{kn} sin(\delta_k - \delta_{n})]$$
+
+$$Q_k = \sum_{n=1}^{N} \lvert V_k \rvert \lvert V_n \rvert [G_{kn} sin(\delta_k - \delta_n) - B_{kn} cos(\delta_k - \delta_{n})]$$
+
+**STEP 3.** Establishing what is known at each bus
+
+Determine which of the two variables are known at each bus.
+
+**STEP 4.** Solving for the key unknowns at each bus
+
+Use the power flow equations in *Step 2* to solve for the unknowns.
+
+### Project Outline
+
+The most common numerical method for solving the power flow problem is the Newton-Raphson method. (Among the other standard techniques 
+are the Gauss and Gauss-Seidel iterations.)
+
+The Newton-Raphson method was coded for this project. The intuition behind this method is as follows:
+
+1. Plug in a guess for the vector of values, $x_0$ (for power systems, usually a "flat start" works - i.e. where $\lvert V \rvert$ = 1 p.u. and $\delta$ = 0 everywhere)
+2. Compute $x_1 = x_0 + \frac{y - f(x_0)}{\frac{\partial f}{\partial x}\Bigr|_{x_0}}$. Note that $y$ is a vector with all values for $P$ and $Q$. 
+3. Iterate:
+    $$x_{i+1} = x_i + \frac{y - f(x_i)}{\frac{\partial f}{\partial x}\Bigr|_{x_i}}$$
+4. As the algorithm converges, $\lvert x_{i+1} - x_i \rvert$ will decrease.
+5. The iteration stops when $\lvert x_{i+1} - x_i \rvert < \epsilon$.
+
+The objective of the algorithm is to produce the numerical solutions for the voltage magnitudes and voltage phase angles at each bus.
+
+### Test Case
+
+Please see code under "src" in [the github repository](https://github.com/hilary-yu/CMiE-2017-hyu).
+
+The algorithm can be run with a 4-bus test case using the following code, which is available under "tests" in the GitHub respository:
+```Julia
+include("code_testsystem1.jl")
+```
+**Note:** All .jl and .xlsx data files should be downloaded to the same folder; then running: include("code_testsystem1.jl") in the 
+Julia repl should produce output for each iteration of the Newton-Raphson method.
+
+The 4-bus test case for which the code is evaluated:
+
+![alt text](http://i.imgur.com/47zdpm7.jpg "4-bus system")
+
+
+### Results for the Test Case
+
+One internal consistency check for whether the algorithm ran properly is to notice that the voltage magnitude for Bus 4 remains the same, which would be 
+expected, as it is a voltage-controlled (P-V) bus. Additionally, the typical range for voltage magnitudes (in per unit) within an operating system is 
+0.95 to 1.05, and hence the values calculated here appear at least reasonable.
+
+From a power systems perspective, the results of such a power flow analyis might be used, for example, to identify a bus at which voltage magnitude is low.
+The lower voltage could then be ameliorated through the use of devices such as a capacitor bank.
+
+###### Newton Raphson Voltage Magnitude Results (p.u.)
+
+| Bus        | Given Data  | First Iteration  | Last Iteration   |
+| ---------- |:-----------:| ----------------:| ----------------:|
+| 1          | 1.0         | 1.0              | 1.0              |
+| 2          | NaN         | 1.03029          | 0.982447         |
+| 3          | NaN         | 1.03895          | 0.96909          |
+| 4          | 1.02        | 1.02             | 1.02             |
+
+
+###### Newton Raphson Phase Angle Results (in radians)
+
+| Bus        | Given Data  | First Iteration  | Last Iteration   |
+| ---------- |:-----------:| ----------------:| ----------------:|
+| 1          | 0.0         | 0.0              | 0.0              |
+| 2          | NaN         | 0.0135481        | -0.0170065       |
+| 3          | NaN         | 0.0292308        | -0.0326178       |
+| 4          | NaN         | -0.0309241       | 0.0266104        |
+
+
+![alt text](http://i.imgur.com/v8Fhr2f.png "Results")
+
+
+### References
+
+Callaway, D. (2017). *ENERES254 Class Notes.*
+
+Crow, M.L. (2016). *Computational Methods for Electric Power Systems (3rd ed).* Boca Raton, FL: CRC Press.
+
+Von Meier, A. (2006). *Electric Power Systems: A Conceptual Introduction.* Hoboken, NJ: John Wiley & Sons, Inc.
